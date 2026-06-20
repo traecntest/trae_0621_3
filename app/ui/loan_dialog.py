@@ -253,17 +253,26 @@ class LoanEditDialog(QDialog):
         form_layout = QFormLayout()
 
         self.item_combo = QComboBox()
-        items = self.item_service.get_all_items(status="在库")
-        for item in items:
-            self.item_combo.addItem(item["name"], item["id"])
-
         if self.loan_id:
+            loan = self.loan_service.get_loan_by_id(self.loan_id)
+            if loan:
+                current_item = self.item_service.get_item_by_id(loan["item_id"])
+                if current_item:
+                    self.item_combo.addItem(current_item["name"], current_item["id"])
+            items = self.item_service.get_all_items(status="在库")
+            for item in items:
+                if item["id"] != loan["item_id"]:
+                    self.item_combo.addItem(item["name"], item["id"])
             self.item_combo.setEnabled(False)
+        else:
+            items = self.item_service.get_all_items(status="在库")
+            for item in items:
+                self.item_combo.addItem(item["name"], item["id"])
 
-        if self.initial_item_id:
-            idx = self.item_combo.findData(self.initial_item_id)
-            if idx >= 0:
-                self.item_combo.setCurrentIndex(idx)
+            if self.initial_item_id:
+                idx = self.item_combo.findData(self.initial_item_id)
+                if idx >= 0:
+                    self.item_combo.setCurrentIndex(idx)
 
         form_layout.addRow("物品*:", self.item_combo)
 
@@ -298,7 +307,10 @@ class LoanEditDialog(QDialog):
 
         layout.addLayout(form_layout)
 
-        buttons = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel)
+        buttons = QDialogButtonBox()
+        ok_button = buttons.addButton("确定", QDialogButtonBox.AcceptRole)
+        cancel_button = buttons.addButton("取消", QDialogButtonBox.RejectRole)
+        ok_button.setDefault(True)
         buttons.accepted.connect(self._on_ok)
         buttons.rejected.connect(self.reject)
         layout.addWidget(buttons)

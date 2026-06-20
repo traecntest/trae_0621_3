@@ -72,11 +72,18 @@ class LoanService:
         if not loan:
             return False
 
+        final_notes = loan.get("notes") or ""
+        if notes:
+            if final_notes:
+                final_notes = final_notes + "\n[归还备注] " + notes
+            else:
+                final_notes = "[归还备注] " + notes
+
         self.db.execute("""
             UPDATE loans SET actual_return_date = ?, status = ?, notes = ?,
                    updated_at = datetime('now', 'localtime')
             WHERE id = ?
-        """, (return_date, self.STATUS_RETURNED, notes, loan_id))
+        """, (return_date, self.STATUS_RETURNED, final_notes if final_notes else None, loan_id))
 
         self.item_service.update_item(loan["item_id"], status=ItemService.STATUS_IN_STOCK)
 
