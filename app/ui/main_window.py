@@ -204,9 +204,10 @@ class MainWindow(QMainWindow):
     def _create_status_menu(self):
         """创建状态筛选菜单"""
         menu = QMenu(self)
+        menu.triggered.connect(self._on_status_menu_triggered)
 
         all_action = menu.addAction("全部状态")
-        all_action.triggered.connect(lambda checked=False: self._set_status_filter(None, "全部状态"))
+        all_action.setData(None)
 
         menu.addSeparator()
 
@@ -214,11 +215,15 @@ class MainWindow(QMainWindow):
                        ItemService.STATUS_TEMPORARY, ItemService.STATUS_LOST,
                        ItemService.STATUS_DISCARDED]:
             action = menu.addAction(status)
-            action.triggered.connect(
-                lambda checked, s=status: self._set_status_filter(s, s)
-            )
+            action.setData(status)
 
         return menu
+
+    def _on_status_menu_triggered(self, action):
+        """状态菜单项触发"""
+        status = action.data()
+        text = action.text()
+        self._set_status_filter(status, text)
 
     def _create_statusbar(self):
         """创建状态栏"""
