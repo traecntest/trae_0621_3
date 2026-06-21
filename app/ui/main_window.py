@@ -206,7 +206,7 @@ class MainWindow(QMainWindow):
         menu = QMenu(self)
 
         all_action = menu.addAction("全部状态")
-        all_action.triggered.connect(lambda: self._set_status_filter(None, "全部状态"))
+        all_action.triggered.connect(lambda checked=False: self._set_status_filter(None, "全部状态"))
 
         menu.addSeparator()
 
