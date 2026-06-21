@@ -206,17 +206,24 @@ class ItemService:
             (limit,)
         )
 
-    def get_long_unviewed_items(self, days=30, limit=10):
+    def get_long_unviewed_items(self, days=30, limit=10, status=None):
         """获取长期未查看的物品（整理建议）"""
-        return self.db.query("""
+        sql = """
             SELECT i.*, l.name as location_name
             FROM items i LEFT JOIN locations l ON i.location_id = l.id
-            WHERE i.status = '在库'
-              AND (i.last_viewed IS NULL
+            WHERE (i.last_viewed IS NULL
                    OR julianday('now') - julianday(i.last_viewed) > ?)
-            ORDER BY COALESCE(i.last_viewed, i.created_at) ASC
-            LIMIT ?
-        """, (days, limit))
+        """
+        params = [days]
+
+        if status:
+            sql += " AND i.status = ?"
+            params.append(status)
+
+        sql += " ORDER BY COALESCE(i.last_viewed, i.created_at) ASC LIMIT ?"
+        params.append(limit)
+
+        return self.db.query(sql, params)
 
     def get_statistics(self):
         """获取统计信息"""

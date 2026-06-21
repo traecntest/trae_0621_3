@@ -231,6 +231,7 @@ class MainWindow(QMainWindow):
         self.current_filter_status = status
         self.status_filter.setText(text)
         self._refresh_items()
+        self._refresh_tips()
 
     def _refresh_all(self):
         """刷新所有数据"""
@@ -316,7 +317,9 @@ class MainWindow(QMainWindow):
 
     def _refresh_tips(self):
         """刷新整理建议"""
-        items = self.item_service.get_long_unviewed_items(days=30, limit=20)
+        items = self.item_service.get_long_unviewed_items(
+            days=30, limit=20, status=self.current_filter_status
+        )
         self.tips_table.setRowCount(len(items))
 
         for row, item in enumerate(items):
